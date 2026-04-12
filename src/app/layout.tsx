@@ -13,12 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Study Planner",
+  title: "StudyBuddy - AI Study Planner",
   description: "The smartest way to organize your learning.",
 };
 
 import { Providers } from "@/components/Providers";
-
+import { Footer } from "@/components/Footer";
 import { Toaster } from "sonner";
 
 export default function RootLayout({
@@ -28,9 +28,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-      <body className="min-h-screen">
+      <body className="flex flex-col min-h-screen">
         <Providers>
-          {children}
+          <div className="flex-1 flex flex-col">
+            {children}
+          </div>
+          <Footer />
           <Toaster position="top-right" theme="dark" closeButton richColors />
         </Providers>
       </body>

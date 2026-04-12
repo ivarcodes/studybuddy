@@ -45,10 +45,6 @@ export default function Home() {
           </div>
         )}
       </div>
-
-      <div className="mt-12 text-zinc-600 text-sm">
-        Built with Next.js 15 & MongoDB
-      </div>
     </div>
   );
 }
