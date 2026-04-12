@@ -25,6 +25,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
+    console.log("Session in API:", JSON.stringify(session, null, 2));
     if (!session) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -41,6 +42,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(newPlan, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ message: "Error creating plan" }, { status: 500 });
+    console.error("POST /api/study-plans error:", error);
+    return NextResponse.json({ message: "Error creating plan", error: String(error) }, { status: 500 });
   }
 }

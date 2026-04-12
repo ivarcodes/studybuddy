@@ -4,17 +4,17 @@ import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import StudyPlan from "@/models/StudyPlan";
 
-// GET a single study plan
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     await connectDB();
-    const plan = await StudyPlan.findOne({ _id: params.id, userId: session.user.id });
-    
+    const plan = await StudyPlan.findOne({ _id: id, userId: session.user.id });
+
     if (!plan) {
       return NextResponse.json({ message: "Plan not found" }, { status: 404 });
     }
@@ -25,9 +25,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-// PUT update a study plan
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -35,33 +35,38 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
     const updates = await req.json();
     await connectDB();
-    
-    const updatedPlan = await StudyPlan.findOneAndUpdate(
-      { _id: params.id, userId: session.user.id },
-      updates,
-      { new: true }
+
+    const setFields: Record<string, any> = {};
+    if (updates.tasks !== undefined) setFields.tasks = updates.tasks;
+    if (updates.title !== undefined) setFields.title = updates.title;
+
+    const updated = await StudyPlan.findOneAndUpdate(
+      { _id: id, userId: session.user.id },
+      { $set: setFields },
+      { returnDocument: 'after' }
     );
 
-    if (!updatedPlan) {
+    if (!updated) {
       return NextResponse.json({ message: "Plan not found" }, { status: 404 });
     }
 
-    return NextResponse.json(updatedPlan);
-  } catch (error) {
-    return NextResponse.json({ message: "Error updating plan" }, { status: 500 });
+    return NextResponse.json(updated.toObject());
+  } catch (error: any) {
+    console.error("PUT Route Crash:", error.message);
+    return NextResponse.json({ message: error.message || "Error updating plan" }, { status: 500 });
   }
 }
 
-// DELETE a study plan
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     await connectDB();
-    const deletedPlan = await StudyPlan.findOneAndDelete({ _id: params.id, userId: session.user.id });
+    const deletedPlan = await StudyPlan.findOneAndDelete({ _id: id, userId: session.user.id });
 
     if (!deletedPlan) {
       return NextResponse.json({ message: "Plan not found" }, { status: 404 });

@@ -19,6 +19,8 @@ export const metadata: Metadata = {
 
 import { Providers } from "@/components/Providers";
 
+import { Toaster } from "sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +29,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <body className="min-h-screen">
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <Toaster position="top-right" theme="dark" closeButton richColors />
+        </Providers>
       </body>
     </html>
   );
