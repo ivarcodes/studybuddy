@@ -34,6 +34,37 @@ export const authOptions: NextAuthOptions = {
           id: user._id.toString(),
           email: user.email,
           name: user.name,
+          role: user.role,
+          isGuest: user.isGuest,
+        };
+      },
+    }),
+    CredentialsProvider({
+      name: "guest",
+      credentials: {
+        guestId: { label: "Guest ID", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.guestId) {
+          throw new Error("Invalid guest session");
+        }
+
+        await connectDB();
+        const user = await User.findOne({
+          _id: credentials.guestId,
+          isGuest: true
+        });
+
+        if (!user) {
+          throw new Error("Guest session expired");
+        }
+
+        return {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          isGuest: user.isGuest,
         };
       },
     }),
@@ -45,12 +76,16 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.role = (user as any).role || 'user';
+        token.isGuest = (user as any).isGuest || false;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        (session.user as any).role = token.role || 'user';
+        (session.user as any).isGuest = token.isGuest || false;
       }
       return session;
     },

@@ -16,6 +16,15 @@ const UserSchema = new Schema({
     type: String,
     required: [true, 'Name is required'],
   },
+  role: {
+    type: String,
+    enum: ['user', 'guest', 'admin'],
+    default: 'user',
+  },
+  isGuest: {
+    type: Boolean,
+    default: false,
+  },
 }, { timestamps: true });
 
 const User = models.User || model('User', UserSchema);
